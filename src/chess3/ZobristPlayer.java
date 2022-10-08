@@ -25,6 +25,7 @@ public class ZobristPlayer extends Player {
 
 	public void setChess(Chess chess) {
 		ch = chess;
+		outofbook = false;
 	}
 
 	@Override
@@ -364,7 +365,7 @@ public class ZobristPlayer extends Player {
 		long zhash = Zobrist.hash(test);
 		// if the stored depth was >= remaining search depth, use that result
 		if (ttable.getDepth(zhash) >= depth) {
-			Zobrist.incrementHits();
+//			Zobrist.incrementHits();
 			return ttable.getMove(zhash);
 		}
 		mgen.moves = orderMovesByValue(mgen.moves, test);
@@ -460,14 +461,14 @@ public class ZobristPlayer extends Player {
 			if (ttable.containsPosition(zhash)) {
 				Position p0 = ttable.table[(int) Math.abs(zhash % ttable.getSize())];
 				if (p0.depth >= depth) {
-					Zobrist.incrementHits();
+//					Zobrist.incrementHits();
 					if (p0.flag == Position.flagEXACT)
 						return p0.eval;
 					else if (p0.flag == Position.flagALPHA && p0.eval <= alpha)
 						return alpha;
 					else if (p0.flag == Position.flagBETA && p0.eval >= beta)
 						return beta;
-					Zobrist.decrementHits();
+//					Zobrist.decrementHits();
 				}
 			}
 			float score = evalMaterial(mgen, depth);
@@ -478,14 +479,14 @@ public class ZobristPlayer extends Player {
 		if (ttable.containsPosition(zhash) && ttable.getDepth(zhash) >= depth) {
 			Position p0 = ttable.table[(int) Math.abs(zhash % ttable.getSize())];
 			if (p0.depth >= depth) {
-				Zobrist.incrementHits();
+//				Zobrist.incrementHits();
 				if (p0.flag == Position.flagEXACT)
 					return p0.eval;
 				else if (p0.flag == Position.flagALPHA && p0.eval <= alpha)
 					return alpha;
 				else if (p0.flag == Position.flagBETA && p0.eval >= beta)
 					return beta;
-				Zobrist.decrementHits();
+//				Zobrist.decrementHits();
 			}
 		}
 
@@ -524,7 +525,7 @@ public class ZobristPlayer extends Player {
 		if (previousBest != null)
 			for (int i = 0; i < movein.size(); i++)
 				if (movein.get(i).start == previousBest.start && movein.get(i).end == previousBest.end) {
-					Zobrist.incrementHits();
+//					Zobrist.incrementHits();
 					moveout.add(movein.get(i));
 					map[i] = true;
 				}

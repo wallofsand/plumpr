@@ -16,7 +16,7 @@ public class TranspositionTable {
 
 	// create an entry to store in the table
 	Position makePosition(long zobrist, int depthRemaining, int isExactScore, float score, Move m) {
-		Zobrist.incrementWrites();
+//		Zobrist.incrementWrites();
 		table[(int) Math.abs(zobrist % getSize())] = new Position(zobrist, depthRemaining, isExactScore, score, m);
 		return table[(int) Math.abs(zobrist % getSize())];
 	}
@@ -31,11 +31,11 @@ public class TranspositionTable {
 		Position p0 = table[(int) Math.abs(newPos.key % getSize())];
 		if (p0 == null || p0.key == newPos.key) {
 			table[(int) Math.abs(newPos.key % getSize())] = newPos;
-			Zobrist.incrementWrites();
+//			Zobrist.incrementWrites();
 		} else {
 			table[(int) Math.abs(newPos.key % getSize())] = newPos;
-			Zobrist.incrementClashes();
-			Zobrist.incrementWrites();
+//			Zobrist.incrementClashes();
+//			Zobrist.incrementWrites();
 		}
 	}
 
@@ -56,7 +56,7 @@ public class TranspositionTable {
 		Position p0 = getPosition(hash);
 		if (p0 == null) return false;
 		else if (p0.key == hash) return true;
-		Zobrist.incrementClashes();
+//		Zobrist.incrementClashes();
 		return false;
 //		return getPosition(hash) != null && getPosition(hash).key == hash;
 	}

@@ -61,7 +61,16 @@ public class Chess {
 			makeMove(m);
 		}
 	}
-
+	
+	public void restart() {
+	    for (int sq = 0; sq < 64; sq ++) {
+	        board[sq] = startBoard[sq];
+	    }
+	    gameOver = false;
+	    activeColourIndex = startPlayerIndex;
+	    castlingRights = startCastle;
+	    moveHistory.clear();
+	}
 	public void unmakeMove() {
 		if (moveHistory.size() > 0) {
 			/* Move unmade = */ moveHistory.removeLast();

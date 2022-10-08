@@ -16,9 +16,9 @@ public abstract class Zobrist {
 	private static final int castleShort = 0;
 	private static final int castleLong = 1;
 
-	private static int clashes = 0;
+	private static long clashes = 0;
 	private static long hits = 0;
-	private static int writes = 0;
+	private static long writes = 0;
 
 	// array of random bitstrings for each piece at each square
 	// pawns are special case: first "rank" is used for white ep-able pawns
@@ -71,44 +71,52 @@ public abstract class Zobrist {
 		return h;
 	}
 
-	public static int getClashes() {
-		return clashes;
-	}
-
-	public static void incrementClashes() {
-		hits++;
-	}
-
-	public static void decrementClashes() {
-		hits--;
-	}
-
-	public static void setHits(long h) {
-		hits = h;
-	}
-
-	public static long getHits() {
-		return hits;
-	}
-
-	public static void incrementHits() {
-		hits++;
-	}
-
-	public static void decrementHits() {
-		hits--;
-	}
-
-	public static long getWrites() {
-		return writes;
-	}
-
-	public static void incrementWrites() {
-		writes++;
-	}
-
-	public static void decrementWrites() {
-		writes--;
-	}
+//	public static long getClashes() {
+//		return clashes;
+//	}
+//
+//	public static void incrementClashes() {
+//		hits++;
+//	}
+//
+//	public static void decrementClashes() {
+//		hits--;
+//	}
+//
+//	public static void setHits(long h) {
+//		hits = h;
+//	}
+//
+//   public static void setWrites(long w) {
+//        writes = w;
+//    }
+//   
+//    public static void setClashes(long c) {
+//        clashes = c;
+//    }
+//	
+//	public static long getHits() {
+//		return hits;
+//	}
+//
+//	public static void incrementHits() {
+//		hits++;
+//	}
+//
+//	public static void decrementHits() {
+//		hits--;
+//	}
+//
+//	public static long getWrites() {
+//		return writes;
+//	}
+//
+//	public static void incrementWrites() {
+//		writes++;
+//	}
+//
+//	public static void decrementWrites() {
+//		writes--;
+//	}
 
 }
