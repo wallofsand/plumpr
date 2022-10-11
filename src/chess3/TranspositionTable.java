@@ -71,7 +71,7 @@ public class TranspositionTable {
 			else if (p0.flag == Position.flagBETA && p0.eval >= beta)
 				return beta;
 		}
-		return (Float) null;
+		return beta;
 	}
 
 	Move getMove(long hash) {

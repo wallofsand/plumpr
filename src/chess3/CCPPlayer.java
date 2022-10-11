@@ -8,10 +8,10 @@ public class CCPPlayer extends Player {
 	private Random rando = new Random();
 
 	public CCPPlayer(Chess chess) {
-		super(chess);
+		super("CCP", chess);
 		this.ch = chess;
 	}
-
+	
 	// CCP prefers moves that are captures, checks, or pawn pushes, in that order.
 	@Override
 	public Move getMove() {

@@ -7,6 +7,7 @@ public class MoveGenerator {
     // --- Instance Variables ---
     Chess ch;
     ArrayList<Move> moves;
+    int[] encoded_moves;
     int activeColour;
     int opColour;
     int activeColourIndex;
@@ -55,7 +56,14 @@ public class MoveGenerator {
         // we must genMoves before gameOver becuase gameOver counts number of moves to
         // determine stalemate/checkmate
         this.moves = genMoves();
+        this.encoded_moves = intMoves();
         this.gameOver = gameOver();
+    }
+
+    private int[] intMoves() {
+        int[] arr = new int[150];
+        
+        return arr;
     }
 
     private ArrayList<Move> genMoves() {

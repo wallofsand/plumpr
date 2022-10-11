@@ -25,7 +25,6 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
      * 
      */
     private static final long serialVersionUID = 7580846255235182438L;
-    Chess chess;
     Color wSquare = new Color(0xeebfa3);
     Color bSquare = new Color(0x744617);
     Color wRed = new Color(0xcc3f3f);
@@ -46,9 +45,8 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
     GameBoard(ChessFrame frame) {
         super();
         this.frame = frame;
-        this.chess = frame.chess;
         this.ps = new LinkedList<Piece>();
-        computerPlayer = new QuiescencePlayer(chess, new TranspositionTable(TranspositionTable.DEFAULT_SIZE));
+        computerPlayer = new QuiescencePlayer(frame.chess, new TranspositionTable(TranspositionTable.DEFAULT_SIZE));
         getPieceImages();
         getPieceObjects();
         if (!frame.isSim) {
@@ -68,16 +66,16 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
         if (frame.searching) {
             selectedPiece = null;
         } else {
-            if (chess.moveHistory.size() > 0) {
-                lastMoveStart = chess.moveHistory.peekLast().start;
-                lastMoveEnd = chess.moveHistory.peekLast().end;
+            if (frame.chess.moveHistory.size() > 0) {
+                lastMoveStart = frame.chess.moveHistory.peekLast().start;
+                lastMoveEnd = frame.chess.moveHistory.peekLast().end;
             }
-            if (selectedPiece != null && selectedPiece.colour() != chess.getActiveColour()) {
+            if (selectedPiece != null && selectedPiece.colour() != frame.chess.getActiveColour()) {
                 selectedPiece = null;
             }
         }
         setSelectedMoves();
-        // Draw the chessboard
+        // Draw the frame.chessboard
         Coordinate v = new Coordinate(0);
         for (int ranks = 0; ranks < 8; ranks++) {
             for (int files = 0; files < 8; files++) {
@@ -142,7 +140,7 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (chess.gameOver || frame.searching)
+        if (frame.chess.gameOver || frame.searching)
             return;
         if (e.getX() < 512 && e.getY() < 512) {
             if (selectedPiece == null) {
@@ -158,7 +156,7 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (chess.gameOver || frame.searching)
+        if (frame.chess.gameOver || frame.searching)
             return;
         if (e.getX() < 512 && e.getY() < 512) {
             if (selectedPiece != null) {
@@ -174,7 +172,7 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void mouseClicked(MouseEvent e) {
-//		if (chess.b1.gameOver || isComputerTurn())
+//		if (frame.chess.b1.gameOver || isComputerTurn())
 //			return;
 //		if (e.getX() < 512 && e.getY() < 512) {
 //			if (selectedPiece != null) {
@@ -200,7 +198,7 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (chess.gameOver || frame.searching)
+        if (frame.chess.gameOver || frame.searching)
             return;
         if (selectedPiece != null) {
             selectedPiece.xGraphic = e.getX() - 32;
@@ -211,7 +209,7 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (chess.gameOver || frame.searching)
+        if (frame.chess.gameOver || frame.searching)
             return;
         if (selectedPiece != null) {
             selectedPiece.xGraphic = e.getX() - 32;
@@ -245,8 +243,8 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
     public void getPieceObjects() {
         ps.clear();
         for (int sqi = 0; sqi < 64; sqi++) {
-            if (!chess.isEmptySquare(sqi)) {
-                new Piece(chess.board[sqi], sqi, ps);
+            if (!frame.chess.isEmptySquare(sqi)) {
+                new Piece(frame.chess.board[sqi], sqi, ps);
             } else {
                 if (getPiece(sqi) != null)
                     getPiece(sqi).kill();
@@ -256,7 +254,7 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
     }
 
     private void genMoves() {
-        MoveGenerator mgen = new MoveGenerator(chess);
+        MoveGenerator mgen = new MoveGenerator(frame.chess);
         this.legalMoves = mgen.moves;
     }
 
@@ -290,34 +288,34 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
                         }
                     }
                     if (m.promoteType != 0)
-                        selectedPiece.piece = frame.getPromotion() | chess.getActiveColour();
-                    if (chess.getActiveColour() == Chess.WHITE || chess.moveHistory.size() == 0) {
+                        selectedPiece.piece = frame.getPromotion() | frame.chess.getActiveColour();
+                    if (frame.chess.getActiveColour() == Chess.WHITE || frame.chess.moveHistory.size() == 0) {
                         // Print the turn number
-                        if (chess.getActiveColour() == Chess.WHITE)
-                            frame.gameHistory.append(Integer.toString(chess.moveHistory.size() / 2 + 1) + ". ");
+                        if (frame.chess.getActiveColour() == Chess.WHITE)
+                            frame.gameHistory.append(Integer.toString(frame.chess.moveHistory.size() / 2 + 1) + ". ");
                         else
-                            frame.gameHistory.append(Integer.toString(chess.moveHistory.size() / 2 + 1) + "... ");
+                            frame.gameHistory.append(Integer.toString(frame.chess.moveHistory.size() / 2 + 1) + "... ");
                     }
                     // Print the chosen move
-                    frame.gameHistory.append(chess.moveText(m));
-                    if (chess.activeColourIndex == Chess.WHITE_INDEX)
+                    frame.gameHistory.append(frame.chess.moveText(m));
+                    if (frame.chess.activeColourIndex == Chess.WHITE_INDEX)
                         frame.gameHistory.append(" ");
                     else
                         frame.gameHistory.append("\n");
                     frame.gameHistory.setCaretPosition(frame.gameHistory.getDocument().getLength());
                     /*
-                     * chessFrame.gameHistory.append(chess.moveText(m) + " ");
+                     * chessFrame.gameHistory.append(frame.chess.moveText(m) + " ");
                      * chessFrame.gameHistory.setCaretPosition(chessFrame.gameHistory.getDocument().
                      * getLength());
                      */
-                    chess.makeHistory(m);
+                    frame.chess.makeHistory(m);
                     break;
                 }
             }
         }
         selectedPiece = null;
         getPieceObjects();
-        int go = (new MoveGenerator(chess)).gameOver();
+        int go = (new MoveGenerator(frame.chess)).gameOver();
         if (go != -1) {
             System.out.println();
             System.out.println("GAME OVER: " + go);
@@ -327,11 +325,11 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
     /*
      * // Method to handle computer moves public void getResponse() throws
      * InterruptedException { Move m1 = null; // determine if it is the computer's
-     * turn to move switch (chess.humanPlayers) { case 0: // no player is human m1 =
+     * turn to move switch (frame.chess.humanPlayers) { case 0: // no player is human m1 =
      * computerPlayer.getMove(); break; case 1: // white player is human // black
-     * player is computer if (chess.b1.activeColourIndex == Chess.BlackIndex) m1 =
+     * player is computer if (frame.chess.b1.activeColourIndex == Chess.BlackIndex) m1 =
      * computerPlayer.getMove(); else return; break; case 2: // black player is
-     * human // white player is computer if (chess.b1.activeColourIndex ==
+     * human // white player is computer if (frame.chess.b1.activeColourIndex ==
      * Chess.WhiteIndex) m1 = computerPlayer.getMove(); else return; break; case 3:
      * // both players are human return; } if (m1 == null) return; // make the
      * computer's move getPieceObjects(); computerMove(m1); return; }
@@ -340,16 +338,16 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
     public void computerMove(Move m) {
         Piece p;
         if (m == null) {
-            System.out.println((chess.getActiveColour() == Chess.WHITE) ? "White" : "Black" + " resigns!");
+            System.out.println((frame.chess.getActiveColour() == Chess.WHITE) ? "White" : "Black" + " resigns!");
         }
         if (m.isEnPassant == true) {
-            p = getPiece(m.end + Compass.pMoves[1 - chess.activeColourIndex]);
-            if (p != null && p.colour() != chess.getActiveColour()) {
+            p = getPiece(m.end + Compass.pMoves[1 - frame.chess.activeColourIndex]);
+            if (p != null && p.colour() != frame.chess.getActiveColour()) {
                 p.kill();
             }
         } else {
             p = getPiece(m.end);
-            if (p != null && p.colour() != chess.getActiveColour()) {
+            if (p != null && p.colour() != frame.chess.getActiveColour()) {
                 p.kill();
             }
         }
@@ -366,7 +364,7 @@ public class GameBoard extends JPanel implements MouseListener, MouseMotionListe
         int rank = 7 - (yGraphic >> 6);
         int file = xGraphic >> 6;
         for (Piece p : ps) {
-            if (p.rankIndex() == rank && p.fileIndex() == file && p.colour() == chess.getActiveColour()) {
+            if (p.rankIndex() == rank && p.fileIndex() == file && p.colour() == frame.chess.getActiveColour()) {
                 return p;
             }
         }

@@ -10,16 +10,16 @@ public class QuiescencePlayer extends Player {
 	private Chess test;
 	Random rando = new Random();
 	final int MOD = +6;
-	final float MAX = 99.99f;
+	final float MAX = 499.99f;
 	final float MIN = -MAX;
-	final float mateinzero = 60f;
+	final float mateinzero = 300f;
 	private float[] pieceValue = { 0f, 1f, 2.8f, 3f, 5f, 9.7f, 0f, 0f };
 	long nodes = 0;
 	long startTime, time;
 	float mobWeight = 0.1f;
 
 	public QuiescencePlayer(Chess chess, TranspositionTable table) {
-		super(chess);
+		super("Que", chess);
 		super.ttable = table;
 	}
 
@@ -51,10 +51,22 @@ public class QuiescencePlayer extends Player {
 		try {
 			if (depth > 0)
 				return iterativeSearch(depth, MIN, MAX);
+			if (countPieces(ch) < 6)
+				return iterativeSearch(MOD + 2, MIN, MAX);
 			return iterativeSearch(MOD, MIN, MAX);
 		} catch (InterruptedException e) {
 			return null;
 		}
+	}
+
+	// One! Ha, ha, ha
+	private int countPieces(Chess ch) {
+		int count = 0;
+		for (int i = 0; i < 64; i++) {
+			if (!ch.isEmptySquare(i))
+				count++;
+		}
+		return count;
 	}
 
 	public long perftRoot(int depth) {
@@ -313,16 +325,6 @@ public class QuiescencePlayer extends Player {
 		return moveSelected;
 	}
 
-	// One! Ha, ha, ha
-	private int countPieces(Chess ch) {
-		int count = 0;
-		for (int i = 0; i < 64; i++) {
-			if (!ch.isEmptySquare(i))
-				count++;
-		}
-		return count;
-	}
-
 	Move iterativeSearch(int depth, float alpha, float beta) throws InterruptedException {
 //		Zobrist.sethits(0);
 		Move lastMove = null;
@@ -363,7 +365,7 @@ public class QuiescencePlayer extends Player {
 		float score = 0;
 		if (doLogging) {
 			System.out.println("\nCurrent eval is " + String.format("%.2f", evalMaterial(mgen, 0)));
-			System.out.println("Starting search of depth " + depth + " at " + 
+			System.out.println("Starting quiescence search of depth " + depth + " at " + 
 					DateFormat.getTimeInstance().format(new Date()));
 		}
 		// if the stored depth was >= remaining search depth, use that result

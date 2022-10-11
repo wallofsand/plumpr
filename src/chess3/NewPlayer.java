@@ -33,7 +33,7 @@ public class NewPlayer extends Player {
 	// 65. Kh8 Ka5 66. Kh7 Ka6 67. Kh8 Ka5 68. Kh7 Ka4 69. Kh8 Ka5
 
 	public NewPlayer(Chess chess) {
-		super(chess);
+		super("Noob", chess);
 		this.ch = chess;
 	}
 

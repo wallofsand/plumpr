@@ -9,7 +9,7 @@ public class ZobristPlayer extends Player {
 	// separate Chess object used for thinking about moves
 	private Chess test;
 	Random rando = new Random();
-	final int MOD = +6;
+	final int MOD = +8;
 	final float MAX = 99.99f;
 	final float MIN = -MAX;
 	final float mateinzero = 60f;
@@ -19,7 +19,7 @@ public class ZobristPlayer extends Player {
 	float mobWeight = 0.1f;
 
 	public ZobristPlayer(Chess chess, TranspositionTable table) {
-		super(chess);
+		super("Zob", chess);
 		super.ttable = table;
 	}
 
@@ -51,7 +51,7 @@ public class ZobristPlayer extends Player {
 			try {
 				if (depth > 0)
 					return iterativeSearch(depth, MIN, MAX);
-				return iterativeSearch(6, MIN, MAX);
+				return iterativeSearch(MOD, MIN, MAX);
 	//		if (depth > 0)
 	//			return rootNegaMax(depth, MIN, MAX);
 	//		int count = countPieces(ch);

@@ -88,12 +88,14 @@ public class NewGameDialog extends JFrame implements ActionListener {
 			if (ai.isSelected()) {
 				sim();
 			} else if (white.isSelected()) {
-				startGame(1);
+				startGame(0);
 			} else if (black.isSelected()) {
-				startGame(2);
+				startGame(1);
 			} else if (random.isSelected()) {
-				startGame(3);
-			} else startGame(0);
+				startGame(2);
+			} else {
+				startGame(-1);
+			}
 		} catch (IOException | InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -102,7 +104,7 @@ public class NewGameDialog extends JFrame implements ActionListener {
 
 	public void sim() throws InterruptedException {
 		chess = new Chess(fen);
-		new ChessFrame(chess, true, 0);
+		new ChessFrame(chess, true, -1);
 		this.setVisible(false);
 	}
 	
@@ -113,7 +115,7 @@ public class NewGameDialog extends JFrame implements ActionListener {
 		// Create and set up the new window.
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				new ChessFrame(chess, arg);
+				new ChessFrame(chess, false, arg);
 			}
 		});
 	}

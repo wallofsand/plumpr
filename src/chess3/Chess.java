@@ -63,6 +63,7 @@ public class Chess {
 	}
 	
 	public void restart() {
+		
 	    for (int sq = 0; sq < 64; sq ++) {
 	        board[sq] = startBoard[sq];
 	    }
@@ -171,6 +172,7 @@ public class Chess {
 		boolean isEnPassant = board[m.end] == Chess.EN_PASSANT;
 		int type = Piece.type(board[m.start]);
 		int colour = Piece.colour(board[m.start]);
+		MoveGenerator textGen = new MoveGenerator(this);
 
 		switch (type) {
 		case KNIGHT:
@@ -254,6 +256,10 @@ public class Chess {
 				alg += "=?";
 			}
 		}
+		if (textGen.gameOver == WHITE_INDEX || textGen.gameOver == BLACK_INDEX)
+			alg += "#";
+		else if (textGen.inCheck)
+			alg += "+";
 		return alg;
 	}
 
@@ -355,6 +361,78 @@ public class Chess {
 //					this.turnCounter = fenChar;
 			}
 		}
+	}
+
+	// TEST FUNCTION
+	// prints a board from the perspective of a given player
+	// takes color as input (White: 0, Black: 8)
+	public String printBoard(int colour) {
+		String out = new String("\n");
+		Coordinate v = new Coordinate(0);
+		for (int j = 0; j < 8; j++) {
+			int ranks = j;
+			if (colour == Chess.WHITE)
+				ranks = 7 - ranks;
+			for (int files = 0; files < 8; files++) {
+				v.setCoordinate(ranks, files);
+				if (Coordinate.getColourIndex(v) == Chess.WHITE_INDEX) {
+					// out = out.concat(Chess.YELLOW_BACKGROUND);
+				} else if (Coordinate.getColourIndex(v) == Chess.BLACK_INDEX) {
+					// out = out.concat(Chess.GREEN_BACKGROUND);
+				}
+				switch (this.board[Coordinate.getSquare(ranks, files)]) {
+				case 1:
+					out = out.concat("P");
+					break;
+				case 2:
+					out = out.concat("N");
+					break;
+				case 3:
+					out = out.concat("B");
+					break;
+				case 4:
+					out = out.concat("R");
+					break;
+				case 5:
+					out = out.concat("Q");
+					break;
+				case 6:
+					out = out.concat("K");
+					break;
+				case 9:
+					out = out.concat("p");
+					break;
+				case 10:
+					out = out.concat("n");
+					break;
+				case 11:
+					out = out.concat("b");
+					break;
+				case 12:
+					out = out.concat("r");
+					break;
+				case 13:
+					out = out.concat("q");
+					break;
+				case 14:
+					out = out.concat("k");
+					break;
+				case 7:
+					out = out.concat("e");
+					break;
+				default:
+					if (Coordinate.getColourIndex(v) == Chess.WHITE_INDEX)
+						out = out.concat(".");
+					else
+						out = out.concat("_");
+					break;
+				}
+				// out = out.concat(" ");
+			}
+			// out = out.concat(Chess.ANSI_RESET);
+			out = out.concat("\n");
+		}
+		return out;
 	}
 
 }

@@ -5,10 +5,10 @@ import java.awt.Font;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -35,6 +35,7 @@ public class ChessFrame extends JFrame implements ActionListener {
     // Zobrist hashing counters
     JLabel clashCounter = new JLabel("Clashes: ", JLabel.CENTER);
     JLabel hitCounter = new JLabel(" Hits: ", JLabel.CENTER);
+    // w/b/d for sim
     int wld[] = { 0, 0, 0 };
     JLabel scoreboard = new JLabel(String.format(" Score: %d/%d/%d", wld[0], wld[1], wld[2]), JLabel.CENTER);
     JLabel zCounter = new JLabel(" Size: ", JLabel.CENTER);
@@ -47,17 +48,12 @@ public class ChessFrame extends JFrame implements ActionListener {
     boolean searching;
     boolean isSim;
     TranspositionTable ttable = new TranspositionTable(TranspositionTable.DEFAULT_SIZE);
-//    Player zob = new ZobristPlayer(chess, ttable);
+    Player zob = new ZobristPlayer(chess, ttable);
     Player que = new QuiescencePlayer(chess, ttable);
-    Player players[] = { /*zob,*/ que };
-    String names[] = { "Zob", "Que" };
+    Player players[] = { que, zob };
     final int SIM_DEPTH = 5;
 
     public int humanarg;
-
-    public ChessFrame(Chess ch, int args) {
-        this(ch, false, args);
-    }
 
     public ChessFrame(Chess ch, boolean doSim, int args) throws HeadlessException {
         super("Chess Game");
@@ -113,7 +109,9 @@ public class ChessFrame extends JFrame implements ActionListener {
             });
             // Add ActionListeners for the undo/redo buttons
             unmakeMove.addActionListener(this);
-            computerMove.addActionListener(this);
+            if (humanarg == -1 && !doSim) {
+                computerMove.addActionListener(this);
+            }
         }
         newGame.addActionListener(this);
         // Setting up the GameBoard
@@ -140,7 +138,9 @@ public class ChessFrame extends JFrame implements ActionListener {
         queen.setSelected(true);
         // Add JButtons to the option panel
         options.add(unmakeMove);
-        options.add(computerMove);
+        if (humanarg == -1 && !doSim) {
+            options.add(computerMove);
+        }
         JPanel botPanel = new JPanel();
         botPanel.setLayout(new BoxLayout(botPanel, BoxLayout.Y_AXIS));
         botPanel.add(sliderLabel);
@@ -177,25 +177,25 @@ public class ChessFrame extends JFrame implements ActionListener {
                 public void run() {
                     try {
                         sim();
-                    } catch (InterruptedException e) {
+                    } catch (IOException | InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             };
             t.start();
         }
-        if (humanarg != 0) {
+        if (humanarg != -1) {
             playChess();
         }
     }
 
     public void playChess() {
-        int colourIndex = humanarg == 2 ? Chess.WHITE_INDEX : Chess.BLACK_INDEX;
-        Thread player = new Thread() {
+        int colourIndex = humanarg == 2 ? Zobrist.zRand.nextInt(2) : ~humanarg & 1;
+        t = new Thread() {
             public void run() {
                 try {
                     while (!Thread.interrupted()) {
-                        if (searching && !chess.gameOver && chess.activeColourIndex == colourIndex) {
+                        if (!chess.gameOver && chess.activeColourIndex == colourIndex) {
                             searching = true;
                             Move m = gb.computerPlayer.getMove(sliderValue);
                             if (m != null) {
@@ -209,23 +209,21 @@ public class ChessFrame extends JFrame implements ActionListener {
                 }
             }
         };
-        player.start();
+        t.start();
     }
 
-    private void sim() throws InterruptedException {
+    private void sim() throws InterruptedException, IOException {
+    // create a new file with specified file name
+    FileWriter fw = new FileWriter("sim.log");
         int go = 0;
-        int side = (wld[0] + wld[1] + wld[2]) % 2;
-        while (true) {
-            chess.restart();
-            que.setChess(chess);
-//            for (Player p : players)
-//                p.setChess(chess);
+        while (wld[0] + wld[1] + wld[2] < 10) {
+            for (Player p : players)
+                p.setChess(chess);
 //            Zobrist.setHits(0);
 //            Zobrist.setWrites(0);
             while (!chess.gameOver) {
                 updateProgress();
-                side = 0;//(wld[0] + wld[1] + wld[2]) % 2;
-                Move aim = que.getMove(SIM_DEPTH);//players[chess.activeColourIndex ^ side].getMove(SIM_DEPTH);
+                Move aim = players[chess.activeColourIndex].getMove(SIM_DEPTH);
                 if (chess.getActiveColour() == Chess.WHITE || chess.moveHistory.size() == 0) {
                     // Print the turn number
                     if (chess.getActiveColour() == Chess.WHITE)
@@ -240,7 +238,6 @@ public class ChessFrame extends JFrame implements ActionListener {
                 else
                     gameHistory.append("\n");
                 chess.makeHistory(aim);
-                updateProgress();
                 go = (new MoveGenerator(chess)).gameOver();
                 if (go != -1) {
                     System.out.println();
@@ -248,13 +245,17 @@ public class ChessFrame extends JFrame implements ActionListener {
                 }
             }
             updateProgress();
-            if (go != 0 && go != 1)
+            if (go != 0 && go != 1) // draw
                 wld[2]++;
-            else if (go == 1)//(players[go ^ side] == zob)
-                wld[1]++;
-            else
-                wld[0]++;
+            else // white/black checkmate
+                wld[go]++;
+            // write a string into the IO stream
+            fw.write((wld[0] + wld[1] + wld[2]) + " -- " + go);
+            fw.write(chess.printBoard(Chess.WHITE) + "\n");
+            chess.restart();
         }
+        // don't forget to close the stream!
+        fw.close();
     }
 
     public void updateProgress() {
@@ -274,6 +275,8 @@ public class ChessFrame extends JFrame implements ActionListener {
                 chess.gameOver = true;
                 if (t != null)
                     t.interrupt();
+                if (t != null)
+                    t.interrupt();
                 java.awt.EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         new NewGameDialog(Chess.DEFAULT_FEN).setVisible(true);
@@ -289,7 +292,7 @@ public class ChessFrame extends JFrame implements ActionListener {
                 }
                 searching = true;
                 for (int i = 0; i < 2; i++) {
-                    if (humanarg == 0)
+                    if (humanarg == -1)
                         i++;
                     // delete the last move
                     while (!gameHistory.getText().isEmpty()) {
@@ -307,13 +310,15 @@ public class ChessFrame extends JFrame implements ActionListener {
                                 break;
                         }
                     chess.unmakeMove();
-                    gb.getPieceObjects();
-                    updateProgress();
                 }
+                gb.getPieceObjects();
+                updateProgress();
+                searching = false;
                 gb.computerPlayer.outofbook = false;
                 searching = false;
                 break;
             case "Computer Move":
+                if (searching) break;
                 JButton source = (JButton) e.getSource();
                 t = new Thread(new Runnable() {
                     public void run() {
@@ -345,6 +350,7 @@ public class ChessFrame extends JFrame implements ActionListener {
                     t.interrupt();
                 break;
             case "perft":
+                if (searching) break;
                 searching = true;
                 t = new Thread(new Runnable() {
                     public void run() {
@@ -356,6 +362,30 @@ public class ChessFrame extends JFrame implements ActionListener {
                 t.start();
                 break;
         }
+    }
+
+    public void computerMove(Player ai, Chess ch, JButton source) {
+        if (searching) return;
+        updateProgress();
+        try {
+            source.setText("Stop Search");
+            source.setActionCommand("Stop Search");
+            searching = true;
+            Move m = gb.computerPlayer.getMove(sliderValue);
+            if (m != null) {
+                gb.computerMove(m);
+            }
+            searching = false;
+            source.setText("Computer Move");
+            source.setActionCommand("Computer Move");
+        } catch (InterruptedException e1) {
+            log.append("\nSearch Canceled\n");
+            log.setCaretPosition(log.getDocument().getLength());
+            searching = false;
+            source.setText("Computer Move");
+            source.setActionCommand("Computer Move");
+        }
+        updateProgress();
     }
 
     public int getPromotion() {

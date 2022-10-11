@@ -8,7 +8,7 @@ public class RandomPlayer extends Player {
 	private MoveGenerator rmgen;
 
 	public RandomPlayer(Chess chess) {
-		super(chess);
+		super("Randy", chess);
 		this.ch = chess;
 	}
 

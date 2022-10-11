@@ -5,8 +5,10 @@ public abstract class Player {
 	public Chess ch;
 	public boolean outofbook;
 	public TranspositionTable ttable;
-	
-	Player(Chess chess) {
+	String name;
+
+	Player(String playerName, Chess chess) {
+		this.name = playerName;
 		ch = chess;
 		outofbook = false;
 	}
