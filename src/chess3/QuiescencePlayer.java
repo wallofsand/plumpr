@@ -381,7 +381,7 @@ public class QuiescencePlayer extends Player {
 			long subnodes = nodes;
 			if (doLogging) System.out.printf("%2d/%-2d: %-7s", moveCounter, mgen.moves.size(), ch.moveText(m));
 			score = -negaMax(depth - 1, -beta, -alpha);
-			if (score > alpha) {
+			if (score > alpha || bestMove == null) {
 				bestMove = m;
 				alpha = score;
 			}
@@ -457,11 +457,15 @@ public class QuiescencePlayer extends Player {
 //					Zobrist.decrementHits();
 				}
 			}
-			float score = quiescence(depth, alpha, beta);
-			// replace this eval call with a quiescence search
-			// float score = evalMaterial(mgen, depth);
-			ttable.makePosition(zhash, depth, Position.flagEXACT, score, null);
-			return score;
+			if (mgen.moves.size() == 0 || mgen.gameOver != -1) {
+				return evalMaterial(mgen, depth);
+			} else {
+				float score = quiescence(depth, alpha, beta);
+				// replace this eval call with a quiescence search
+				// float score = evalMaterial(mgen, depth);
+				ttable.makePosition(zhash, depth, Position.flagEXACT, score, null);
+				return score;
+			}
 		}
 		// if the stored depth was >= remaining search depth, use that result
 		if (ttable.containsPosition(zhash) && ttable.getDepth(zhash) >= depth) {
@@ -506,7 +510,7 @@ public class QuiescencePlayer extends Player {
 		if (mgen.moves.size() == 0 || mgen.gameOver != -1) {
 			return stand_pat;
 		}
-		if (stand_pat >= beta) return beta;
+		if (stand_pat >= beta) return stand_pat;
 		
 		// Delta pruning: if a huge swing (> 1 queen)
 		// is not enough to improve the position, give up

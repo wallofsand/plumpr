@@ -6,13 +6,13 @@ public abstract class Zobrist {
 
 	static Random zRand;
 
-	private static final int pawnIndex = 0;
-	private static final int knightIndex = 1;
-	private static final int bishopIndex = 2;
-	private static final int rookIndex = 3;
-	private static final int queenIndex = 4;
-	private static final int kingIndex = 5;
-	private static final int blackOffset = 6;
+	// private static final int pawnIndex = 0;
+	// private static final int knightIndex = 1;
+	// private static final int bishopIndex = 2;
+	// private static final int rookIndex = 3;
+	// private static final int queenIndex = 4;
+	// private static final int kingIndex = 5;
+	// private static final int blackOffset = 6;
 	private static final int castleShort = 0;
 	private static final int castleLong = 1;
 

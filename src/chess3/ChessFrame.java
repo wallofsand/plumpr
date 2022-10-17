@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -44,7 +46,7 @@ public class ChessFrame extends JFrame implements ActionListener {
     JTextArea log, gameHistory;
     JSlider depthSlider;
     int sliderValue;
-    Thread t;
+    ArrayList<Thread> tls = new ArrayList<Thread>();
     boolean searching;
     boolean isSim;
     TranspositionTable ttable = new TranspositionTable(TranspositionTable.DEFAULT_SIZE);
@@ -173,7 +175,7 @@ public class ChessFrame extends JFrame implements ActionListener {
         setVisible(true);
 
         if (doSim) {
-            t = new Thread() {
+            Thread t = new Thread() {
                 public void run() {
                     try {
                         sim();
@@ -182,6 +184,7 @@ public class ChessFrame extends JFrame implements ActionListener {
                     }
                 }
             };
+            tls.add(t);
             t.start();
         }
         if (humanarg != -1) {
@@ -191,24 +194,8 @@ public class ChessFrame extends JFrame implements ActionListener {
 
     public void playChess() {
         int colourIndex = humanarg == 2 ? Zobrist.zRand.nextInt(2) : ~humanarg & 1;
-        t = new Thread() {
-            public void run() {
-                try {
-                    while (!Thread.interrupted()) {
-                        if (!chess.gameOver && chess.activeColourIndex == colourIndex) {
-                            searching = true;
-                            Move m = gb.computerPlayer.getMove(sliderValue);
-                            if (m != null) {
-                                gb.computerMove(m);
-                            }
-                            searching = false;
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
+        Thread t = new Thread(new ThreadPlayer(this, colourIndex), "play_chess");
+        tls.add(t);
         t.start();
     }
 
@@ -273,10 +260,10 @@ public class ChessFrame extends JFrame implements ActionListener {
         switch (e.getActionCommand()) {
             case "New Game":
                 chess.gameOver = true;
-                if (t != null)
-                    t.interrupt();
-                if (t != null)
-                    t.interrupt();
+                for (Thread t : tls) {
+                    if (t != null)
+                        t.interrupt();
+                }
                 java.awt.EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         new NewGameDialog(Chess.DEFAULT_FEN).setVisible(true);
@@ -287,8 +274,10 @@ public class ChessFrame extends JFrame implements ActionListener {
                 break;
             case "Undo":
                 if (searching) {
-                    if (t != null)
-                        t.interrupt();
+                    for (Thread t : tls) {
+                        if (t != null)
+                            t.interrupt();
+                    }
                 }
                 searching = true;
                 for (int i = 0; i < 2; i++) {
@@ -313,14 +302,13 @@ public class ChessFrame extends JFrame implements ActionListener {
                 }
                 gb.getPieceObjects();
                 updateProgress();
-                searching = false;
                 gb.computerPlayer.outofbook = false;
                 searching = false;
                 break;
             case "Computer Move":
                 if (searching) break;
                 JButton source = (JButton) e.getSource();
-                t = new Thread(new Runnable() {
+                Thread aim = new Thread(new Runnable() {
                     public void run() {
                         try {
                             source.setText("Stop Search");
@@ -343,29 +331,35 @@ public class ChessFrame extends JFrame implements ActionListener {
                         updateProgress();
                     }
                 });
-                t.start();
+                tls.add(aim);
+                aim.start();
                 break;
             case "Stop Search":
-                if (t != null)
+                for(Thread t : tls){if (t != null)
                     t.interrupt();
-                break;
+                break;}
             case "perft":
                 if (searching) break;
                 searching = true;
-                t = new Thread(new Runnable() {
+                aim = new Thread(new Runnable() {
                     public void run() {
                         gb.computerPlayer.perftRoot(sliderValue);
                         updateProgress();
                         searching = false;
                     }
                 });
-                t.start();
+                aim.start();
                 break;
         }
     }
 
-    public void computerMove(Player ai, Chess ch, JButton source) {
-        if (searching) return;
+    public boolean ai_can_move(int ai_colour_index) {
+        if (!searching && !chess.gameOver && chess.activeColourIndex == ai_colour_index) return true;
+        return false;
+    }
+
+    public void computerMove(Player ai, Chess ch, JButton source, int ai_colour_index) {
+        if (!ai_can_move(ai_colour_index)) return;
         updateProgress();
         try {
             source.setText("Stop Search");

@@ -1,0 +1,8 @@
+{
+    "java.configuration.runtimes": [
+        {
+          "name": "JavaSE-1.8",
+          "path": "C:\\Program Files\\Java\\java-1.8.0-openjdk-1.8.0.345-1.b01.redhat.windows.x86_64",
+        }
+      ]
+}

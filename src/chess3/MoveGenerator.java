@@ -60,10 +60,36 @@ public class MoveGenerator {
         this.gameOver = gameOver();
     }
 
+    /*
+        Method to generate moves encoded as integers.
+        a move contains 2 squares 0-64 and 1 flag for promotions 2-5
+        moves are encoded as an int 4 bytes of 8 bits each
+        0000_0111_1111_1111
+              p=? sq_1 sq_0
+        sq_0 = mv & 63
+        sq_1 = mv >>> 4 & 63        
+        prom = mv >>> 12
+        mv = (prom << 8) | (sq_1 << 4) | sq_0
+    */
     private int[] intMoves() {
-        int[] arr = new int[150];
-        
+        int[] arr = new int[100];
+        // Pawns
+            // pushes
+            // captures
+            // doubles
+            // promotions
+        // Knights
+            // consult knightMoves table
+        // Sliders
+        // King
         return arr;
+    }
+
+    public static Move decodeMove(int mv, Chess ch) {
+        int start = 0;
+        int end = 0;
+        int prom = 0;
+        return new Move(start, end, prom);
     }
 
     private ArrayList<Move> genMoves() {
